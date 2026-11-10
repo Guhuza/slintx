@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a reproducible SlintX problem
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Before filing, check existing issues and remove credentials or private data from logs.
+  - type: input
+    id: version
+    attributes:
+      label: SlintX version
+      placeholder: slintx 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Host operating system and Rust target
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the exact command and a minimal project/configuration.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and sanitized logs
+    validations:
+      required: true

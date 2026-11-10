@@ -1,0 +1,36 @@
+[package]
+name = "slintx"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+description = "A project scaffold and development CLI for Rust and Slint"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Guhuza/slintx"
+documentation = "https://docs.rs/slintx"
+readme = "README.md"
+keywords = ["slint", "cli", "scaffolding", "desktop", "mobile"]
+categories = ["command-line-utilities", "development-tools"]
+include = [
+    "src/**",
+    "templates/**",
+    "tests/**",
+    "docs/**",
+    "README.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+    "rust-toolchain.toml",
+]
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+command-group = "5.0"
+ctrlc = "3.4"
+include_dir = "0.7"
+notify = "8.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tempfile = "3.20"
+toml = "0.9"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }

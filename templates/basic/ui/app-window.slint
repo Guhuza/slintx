@@ -1,0 +1,18 @@
+import { Button, VerticalBox } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    in-out property <int> counter: 0;
+
+    VerticalBox {
+        Text {
+            text: "Hello from {{project_name}}";
+        }
+
+        Button {
+            text: "Count: \{root.counter}";
+            clicked => {
+                root.counter += 1;
+            }
+        }
+    }
+}

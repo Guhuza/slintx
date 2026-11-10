@@ -1,0 +1,4 @@
+schema-version = 1
+template = "basic"
+template-version = 1
+default-package = "{{package_name}}"

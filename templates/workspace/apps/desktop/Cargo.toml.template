@@ -1,0 +1,16 @@
+[package]
+name = "{{package_name}}-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+build = "build.rs"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+slint = { version = "=1.18.1", features = ["backend-android-activity-06"] }
+app-core = { path = "../../crates/app-core" }
+
+[build-dependencies]
+slint-build = "=1.18.1"
