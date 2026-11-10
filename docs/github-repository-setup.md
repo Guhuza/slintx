@@ -1,8 +1,8 @@
-# GitHub repository setup checklist
+# GitHub repository health and release checklist
 
 Repository files can prepare automated checks and contribution policy, but they cannot enable
-GitHub-hosted security settings or branch rules. Complete these steps after the repository URL
-exists and the repository is connected as the local `origin`.
+GitHub-hosted security settings or branch rules. This document records the repository's current
+verified setup and the remaining crates.io release step.
 
 ## Security
 
@@ -25,8 +25,8 @@ Protect the default branch (`main`):
 
 ## Repository metadata and release
 
-- Add the confirmed canonical repository URL to `Cargo.toml` (`repository` and, if desired,
-  `homepage`) and README links.
+- `Cargo.toml` and README point to the confirmed canonical repository URL:
+  <https://github.com/Guhuza/slintx>.
 - Confirm the chosen license and copyright holder before the first release.
 - Confirm the `slintx` crates.io package name is available and the publisher has the correct owner
   permissions.
@@ -34,9 +34,15 @@ Protect the default branch (`main`):
 - Publish only from a reviewed, tagged commit after CI passes; never place a crates.io token in
   the repository.
 
-## Current limitation
+## Verified repository state
 
-The local checkout has no Git remote and `Guhuza/slintx` was not found on GitHub during the
-repository audit. Therefore no repository URL, GitHub settings, branch rules, or status-check
-configuration can be verified from this checkout. The issue-template config intentionally avoids
-a repository-specific security-advisory link until the canonical repository is confirmed.
+- Public repository: <https://github.com/Guhuza/slintx>, default branch `main`.
+- Dependabot alerts and security update pull requests are enabled.
+- Secret scanning and push protection are enabled.
+- Private vulnerability reporting is enabled and linked from the issue templates and `SECURITY.md`.
+- `main` requires pull requests, current CI matrix checks, CodeQL, and conversation resolution;
+  force pushes and branch deletion are disabled.
+- The CI matrix and CodeQL scan pass on Windows, macOS, and Linux.
+
+The `slintx` package name was available and `cargo publish --dry-run --locked` succeeded. An
+authenticated crates.io publishing session is still required to publish the crate.
