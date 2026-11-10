@@ -40,6 +40,7 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
     let mut child = ChildGuard(child);
     let marker = project.path().join("launches.txt");
     wait_for_launches(&mut child.0, &marker, 1);
+    thread::sleep(Duration::from_secs(2));
 
     write_app(project.path(), "second");
     wait_for_launches(&mut child.0, &marker, 2);

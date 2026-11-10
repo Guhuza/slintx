@@ -6,6 +6,10 @@ Run `slintx doctor` and inspect the original Cargo diagnostics. Confirm that bot
 `slint-build` use the template's Slint 1.18.1 version. Slint UI syntax is compiled by the
 official Slint build crate during Cargo's build-script phase.
 
+On Linux, installing a desktop build may also require the system packages `libfontconfig1-dev`,
+`libx11-dev`, `libxcb-shape0-dev`, `libxcb-xfixes0-dev`, `libxkbcommon-dev`,
+`libxkbcommon-x11-dev`, and `libwayland-dev`.
+
 ## The app did not restart
 
 SlintX starts a replacement only after Cargo succeeds and reports a current executable. A

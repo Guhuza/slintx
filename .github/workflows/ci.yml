@@ -20,6 +20,11 @@ jobs:
         with:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
+      - name: Install Linux desktop build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libfontconfig1-dev libx11-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev libxkbcommon-x11-dev libwayland-dev
       - name: Format
         run: cargo fmt --all -- --check
       - name: Clippy
@@ -28,11 +33,11 @@ jobs:
         run: cargo test --all-targets
       - name: Build generated Basic template
         run: |
-          cargo run -- new slintx-ci-basic --path target/slintx-ci-basic --vcs none
-          cargo check --manifest-path target/slintx-ci-basic/Cargo.toml
+          cargo run -- new slintx-ci-basic --path target/slintx-ci-basic-${{ github.run_id }}-${{ github.run_attempt }} --vcs none
+          cargo check --manifest-path target/slintx-ci-basic-${{ github.run_id }}-${{ github.run_attempt }}/Cargo.toml
       - name: Build generated Workspace template
         run: |
-          cargo run -- new slintx-ci-workspace --template workspace --path target/slintx-ci-workspace --vcs none
-          cargo check --manifest-path target/slintx-ci-workspace/Cargo.toml --workspace
+          cargo run -- new slintx-ci-workspace --template workspace --path target/slintx-ci-workspace-${{ github.run_id }}-${{ github.run_attempt }} --vcs none
+          cargo check --manifest-path target/slintx-ci-workspace-${{ github.run_id }}-${{ github.run_attempt }}/Cargo.toml --workspace
       - name: Verify crates.io package
         run: cargo publish --dry-run --locked
