@@ -1,23 +1,39 @@
 use std::fs;
 use std::path::{Component, Path};
 use std::sync::mpsc::{self, Receiver};
+#[cfg(target_os = "macos")]
+use std::time::Duration;
 
 use anyhow::{Context, Result};
-use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
+#[cfg(target_os = "macos")]
+use notify::PollWatcher;
+#[cfg(not(target_os = "macos"))]
+use notify::RecommendedWatcher;
+use notify::{Config, Event, RecursiveMode, Watcher};
+
+#[cfg(not(target_os = "macos"))]
+type ProjectWatcherBackend = RecommendedWatcher;
+#[cfg(target_os = "macos")]
+type ProjectWatcherBackend = PollWatcher;
 
 pub struct ProjectWatcher {
-    _watcher: RecommendedWatcher,
+    _watcher: ProjectWatcherBackend,
     events: Receiver<notify::Result<Event>>,
 }
 
 impl ProjectWatcher {
     pub fn new(root: &Path) -> Result<Self> {
         let (sender, events) = mpsc::channel();
-        let mut watcher = RecommendedWatcher::new(
-            move |event| {
-                let _ = sender.send(event);
-            },
-            Config::default(),
+        let handler = move |event| {
+            let _ = sender.send(event);
+        };
+        #[cfg(not(target_os = "macos"))]
+        let mut watcher = RecommendedWatcher::new(handler, Config::default())
+            .context("failed to create filesystem watcher")?;
+        #[cfg(target_os = "macos")]
+        let mut watcher = PollWatcher::new(
+            handler,
+            Config::default().with_poll_interval(Duration::from_millis(500)),
         )
         .context("failed to create filesystem watcher")?;
 

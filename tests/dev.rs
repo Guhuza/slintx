@@ -44,6 +44,8 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
 
     write_app(project.path(), "second");
     wait_for_launches(&mut child.0, &marker, 2);
+    let launches_before_failed_build =
+        wait_for_stable_launch_count(&mut child.0, &marker, Duration::from_secs(2));
 
     std::fs::write(
         project.path().join("src/main.rs"),
@@ -56,7 +58,7 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
         .lines()
         .count();
     assert_eq!(
-        launches, 2,
+        launches, launches_before_failed_build,
         "a failed rebuild must not launch an old artifact"
     );
 }
@@ -93,6 +95,35 @@ fn wait_for_launches(child: &mut Child, marker: &std::path::Path, expected: usiz
         assert!(
             Instant::now() < deadline,
             "timed out waiting for {expected} app launches"
+        );
+        thread::sleep(Duration::from_millis(100));
+    }
+}
+
+fn wait_for_stable_launch_count(
+    child: &mut Child,
+    marker: &std::path::Path,
+    stable_for: Duration,
+) -> usize {
+    let deadline = Instant::now() + Duration::from_secs(30);
+    let mut previous_count = 0;
+    let mut unchanged_since = Instant::now();
+    loop {
+        if let Some(status) = child.try_wait().expect("inspect slintx dev process") {
+            panic!("slintx dev exited early with {status}");
+        }
+        let count = std::fs::read_to_string(marker)
+            .map(|contents| contents.lines().count())
+            .unwrap_or_default();
+        if count != previous_count {
+            previous_count = count;
+            unchanged_since = Instant::now();
+        } else if unchanged_since.elapsed() >= stable_for {
+            return count;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "application launch count did not stabilize"
         );
         thread::sleep(Duration::from_millis(100));
     }

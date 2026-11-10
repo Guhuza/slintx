@@ -82,6 +82,8 @@ process group.
 This is rebuild-and-restart development, not runtime hot reload. Slint 1.18.1 has a separate
 optional `live-preview` feature for reloading `.slint` UI at runtime; it requires compile-time
 feature/environment configuration and is not enabled by SlintX by default.
+On macOS, filesystem changes are detected with a 500 ms polling interval for consistent behavior
+across local and hosted environments.
 
 ## Build and check
 
