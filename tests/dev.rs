@@ -16,6 +16,7 @@ impl Drop for ChildGuard {
 #[test]
 fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
     let project = tempdir().expect("temporary project directory");
+    let target = tempdir().expect("temporary Cargo target directory");
     let log_path = project.path().join("slintx.log");
     std::fs::create_dir(project.path().join("src")).expect("create source directory");
     std::fs::write(
@@ -29,6 +30,18 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
     )
     .expect("write SlintX config");
     write_app(project.path(), "first");
+    let lock_status = Command::new("cargo")
+        .args(["generate-lockfile", "--manifest-path"])
+        .arg(project.path().join("Cargo.toml"))
+        .current_dir(project.path())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .expect("generate Cargo lockfile");
+    assert!(
+        lock_status.success(),
+        "Cargo failed to generate the lockfile"
+    );
 
     let log_file = std::fs::File::create(&log_path).expect("create SlintX log");
     let child = Command::new(env!("CARGO_BIN_EXE_slintx"))
@@ -38,6 +51,7 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
         .stdout(Stdio::from(log_file.try_clone().expect("clone SlintX log")))
         .stderr(Stdio::from(log_file))
         .env("RUST_LOG", "debug")
+        .env("CARGO_TARGET_DIR", target.path())
         .spawn()
         .expect("start slintx dev");
     let mut child = ChildGuard(child);
