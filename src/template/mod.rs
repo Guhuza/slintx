@@ -384,8 +384,15 @@ fn collect_files(root: &Path) -> Result<Vec<PathBuf>> {
 }
 
 fn validate_relative_path(path: &Path) -> Result<()> {
-    if path.as_os_str().is_empty()
-        || path
+    let path_text = path.as_os_str().to_string_lossy();
+    let portable_path = path_text.replace('\\', "/");
+    let has_windows_drive_prefix = portable_path
+        .as_bytes()
+        .get(..2)
+        .is_some_and(|prefix| prefix[0].is_ascii_alphabetic() && prefix[1] == b':');
+    if portable_path.is_empty()
+        || has_windows_drive_prefix
+        || Path::new(&portable_path)
             .components()
             .any(|component| !matches!(component, Component::Normal(_)))
     {
@@ -593,5 +600,7 @@ mod tests {
     fn rejects_unsafe_template_paths() {
         assert!(validate_relative_path(Path::new("../escape")).is_err());
         assert!(validate_relative_path(Path::new("C:\\escape")).is_err());
+        assert!(validate_relative_path(Path::new("C:/escape")).is_err());
+        assert!(validate_relative_path(Path::new("\\\\server\\share")).is_err());
     }
 }
