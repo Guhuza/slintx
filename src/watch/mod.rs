@@ -9,7 +9,7 @@ use anyhow::{Context, Result};
 use notify::PollWatcher;
 #[cfg(not(target_os = "macos"))]
 use notify::RecommendedWatcher;
-use notify::{Config, Event, RecursiveMode, Watcher};
+use notify::{Config, Event, EventKind, RecursiveMode, Watcher};
 
 #[cfg(not(target_os = "macos"))]
 type ProjectWatcherBackend = RecommendedWatcher;
@@ -62,8 +62,13 @@ impl ProjectWatcher {
     }
 
     pub fn relevant_event(&self, event: &Event, root: &Path) -> bool {
-        event.paths.iter().any(|path| is_relevant_path(path, root))
+        is_relevant_event(event, root)
     }
+}
+
+fn is_relevant_event(event: &Event, root: &Path) -> bool {
+    !matches!(&event.kind, EventKind::Access(_))
+        && event.paths.iter().any(|path| is_relevant_path(path, root))
 }
 
 pub fn is_relevant_path(path: &Path, root: &Path) -> bool {
@@ -114,7 +119,17 @@ fn ignored_component(component: &std::ffi::OsStr) -> bool {
 mod tests {
     use std::path::Path;
 
-    use super::is_relevant_path;
+    use notify::{Event, EventKind, event::AccessKind};
+
+    use super::{is_relevant_event, is_relevant_path};
+
+    #[test]
+    fn ignores_file_access_events() {
+        let root = Path::new("project");
+        let mut event = Event::new(EventKind::Access(AccessKind::Read));
+        event.paths.push(root.join("Cargo.toml"));
+        assert!(!is_relevant_event(&event, root));
+    }
 
     #[test]
     fn watches_ui_rust_and_assets_but_not_build_outputs() {
