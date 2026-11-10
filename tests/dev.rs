@@ -17,7 +17,8 @@ impl Drop for ChildGuard {
 fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
     let project = tempdir().expect("temporary project directory");
     let target = tempdir().expect("temporary Cargo target directory");
-    let log_path = project.path().join("slintx.log");
+    let logs = tempdir().expect("temporary log directory");
+    let log_path = logs.path().join("slintx.log");
     std::fs::create_dir(project.path().join("src")).expect("create source directory");
     std::fs::write(
         project.path().join("Cargo.toml"),
