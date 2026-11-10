@@ -89,7 +89,9 @@ fn wait_for_change(
             .min(Duration::from_millis(100));
         match watcher.events().recv_timeout(timeout) {
             Ok(Ok(event)) => {
-                if watcher.relevant_event(&event, root) {
+                let relevant = watcher.relevant_event(&event, root);
+                tracing::debug!(paths = ?event.paths, relevant, "filesystem event");
+                if relevant {
                     last_change = Some(Instant::now());
                 }
             }

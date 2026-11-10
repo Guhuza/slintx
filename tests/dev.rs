@@ -16,6 +16,7 @@ impl Drop for ChildGuard {
 #[test]
 fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
     let project = tempdir().expect("temporary project directory");
+    let log_path = project.path().join("slintx.log");
     std::fs::create_dir(project.path().join("src")).expect("create source directory");
     std::fs::write(
         project.path().join("Cargo.toml"),
@@ -34,7 +35,10 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
         .arg(project.path().join("Cargo.toml"))
         .current_dir(project.path())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(Stdio::from(
+            std::fs::File::create(&log_path).expect("create SlintX log"),
+        ))
+        .env("RUST_LOG", "debug")
         .spawn()
         .expect("start slintx dev");
     let mut child = ChildGuard(child);
@@ -45,7 +49,7 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
     write_app(project.path(), "second");
     wait_for_launches(&mut child.0, &marker, 2);
     let launches_before_failed_build =
-        wait_for_stable_launch_count(&mut child.0, &marker, Duration::from_secs(2));
+        wait_for_stable_launch_count(&mut child.0, &marker, &log_path, Duration::from_secs(2));
 
     std::fs::write(
         project.path().join("src/main.rs"),
@@ -103,6 +107,7 @@ fn wait_for_launches(child: &mut Child, marker: &std::path::Path, expected: usiz
 fn wait_for_stable_launch_count(
     child: &mut Child,
     marker: &std::path::Path,
+    log_path: &std::path::Path,
     stable_for: Duration,
 ) -> usize {
     let deadline = Instant::now() + Duration::from_secs(30);
@@ -123,7 +128,8 @@ fn wait_for_stable_launch_count(
         }
         assert!(
             Instant::now() < deadline,
-            "application launch count did not stabilize"
+            "application launch count did not stabilize; SlintX log:\n{}",
+            std::fs::read_to_string(log_path).unwrap_or_default()
         );
         thread::sleep(Duration::from_millis(100));
     }
