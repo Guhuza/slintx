@@ -30,14 +30,13 @@ fn dev_rebuilds_and_restarts_after_a_rust_source_change() {
     .expect("write SlintX config");
     write_app(project.path(), "first");
 
+    let log_file = std::fs::File::create(&log_path).expect("create SlintX log");
     let child = Command::new(env!("CARGO_BIN_EXE_slintx"))
         .args(["dev", "--manifest-path"])
         .arg(project.path().join("Cargo.toml"))
         .current_dir(project.path())
-        .stdout(Stdio::null())
-        .stderr(Stdio::from(
-            std::fs::File::create(&log_path).expect("create SlintX log"),
-        ))
+        .stdout(Stdio::from(log_file.try_clone().expect("clone SlintX log")))
+        .stderr(Stdio::from(log_file))
         .env("RUST_LOG", "debug")
         .spawn()
         .expect("start slintx dev");

@@ -28,10 +28,14 @@ pub fn spawn_application(
 }
 
 pub fn try_wait(process: &mut ManagedProcess) -> Result<Option<ExitStatus>> {
-    process
+    let status = process
         .child
         .try_wait()
-        .context("failed to inspect application process")
+        .context("failed to inspect application process")?;
+    if status.is_some() {
+        process.stopped = true;
+    }
+    Ok(status)
 }
 
 pub fn stop(process: &mut ManagedProcess) -> Result<()> {
