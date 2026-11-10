@@ -142,8 +142,21 @@ fn wait_for_stable_launch_count(
         assert!(
             Instant::now() < deadline,
             "application launch count did not stabilize; SlintX log:\n{}",
-            std::fs::read_to_string(log_path).unwrap_or_default()
+            last_log_lines(log_path, 100)
         );
         thread::sleep(Duration::from_millis(100));
     }
+}
+
+fn last_log_lines(path: &std::path::Path, count: usize) -> String {
+    let contents = std::fs::read_to_string(path).unwrap_or_default();
+    contents
+        .lines()
+        .rev()
+        .take(count)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev()
+        .collect::<Vec<_>>()
+        .join("\n")
 }
